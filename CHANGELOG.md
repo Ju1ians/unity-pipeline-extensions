@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 / safe-component-v1 - 2026-08-23
+
+- Add the missing Unity `.meta` file for `LICENSE.md` so Git installs remain console-clean during asset refreshes.
+
 ## 0.3.0 / safe-component-v1 - 2026-08-23
 
 - Make the package a standalone extension of the official `com.unity.pipeline` package.
