@@ -1,0 +1,47 @@
+name: Validate UPM package
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate standalone package contract
+        shell: pwsh
+        run: |
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          if ($package.name -ne 'com.julianketter.unity-pipeline-extensions') {
+            throw 'Unexpected package name.'
+          }
+          if ($package.dependencies.'com.unity.pipeline' -ne '0.5.0-exp.1') {
+            throw 'Official Unity Pipeline dependency changed without compatibility review.'
+          }
+          $trackedSource = Get-ChildItem Editor,Runtime,Tests -Recurse -File |
+            Where-Object Extension -in '.cs','.asmdef' |
+            ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }
+          if (($trackedSource -join "`n") -match '(?i)gateway|bridge') {
+            throw 'The standalone Extensions package must not depend on Gateway or Bridge concepts.'
+          }
+          $tests = Get-Content Tests/Editor/UnityPipeline.Extensions.Tests.Editor.asmdef -Raw | ConvertFrom-Json
+          if ('UNITY_INCLUDE_TESTS' -notin @($tests.defineConstraints)) {
+            throw 'Test assembly must remain disabled in normal project compilation.'
+          }
+      - name: Validate Unity metadata coverage
+        shell: pwsh
+        run: |
+          $missing = @()
+          Get-ChildItem -Recurse -Force | Where-Object {
+            $_.FullName -notlike '*\.git\*' -and
+            $_.FullName -notlike '*\.github\*' -and
+            $_.Name -notmatch '^\.' -and
+            $_.Extension -ne '.meta'
+          } | ForEach-Object {
+            if (-not (Test-Path -LiteralPath ($_.FullName + '.meta'))) { $missing += $_.FullName }
+          }
+          if ($missing.Count) { throw ("Missing Unity .meta files:`n" + ($missing -join "`n")) }
