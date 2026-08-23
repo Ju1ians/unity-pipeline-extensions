@@ -1,0 +1,21 @@
+{
+  "name": "UnityPipeline.Extensions.Tests.Editor",
+  "rootNamespace": "UnityPipeline.Extensions.Tests.Editor",
+  "references": [
+    "UnityPipeline.Extensions",
+    "UnityPipeline.Extensions.Editor",
+    "Unity.Pipeline",
+    "Unity.Pipeline.Editor",
+    "Unity.Nuget.Newtonsoft-Json"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ]
+}

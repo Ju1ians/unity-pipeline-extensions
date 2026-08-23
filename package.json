@@ -1,0 +1,32 @@
+{
+  "name": "com.julianketter.unity-pipeline-extensions",
+  "displayName": "Unity Pipeline Extensions",
+  "version": "0.3.0",
+  "unity": "6000.0",
+  "description": "Standalone extensions for official Unity Pipeline: analyzer-safe authoring, diagnostics, and deterministic validation.",
+  "author": {
+    "name": "Julian Ketter",
+    "url": "https://github.com/Ju1ians"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ju1ians/unity-pipeline-extensions.git"
+  },
+  "keywords": [
+    "unity",
+    "pipeline",
+    "extensions",
+    "automation",
+    "diagnostics",
+    "testing"
+  ],
+  "dependencies": {
+    "com.unity.pipeline": "0.5.0-exp.1",
+    "com.unity.nuget.newtonsoft-json": "3.0.2"
+  },
+  "_unityPipelineExtensions": {
+    "buildIdentity": "com.julianketter.unity-pipeline-extensions/0.3.0/safe-component-v1",
+    "compatibilityRevision": "safe-component-v1",
+    "safeAddComponentCommand": "safe_add_component"
+  }
+}

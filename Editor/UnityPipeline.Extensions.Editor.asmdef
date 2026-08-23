@@ -1,0 +1,21 @@
+{
+  "name": "UnityPipeline.Extensions.Editor",
+  "rootNamespace": "UnityPipeline.Extensions.Editor",
+  "references": [
+    "UnityPipeline.Extensions",
+    "Unity.Pipeline",
+    "Unity.Pipeline.Editor",
+    "Unity.Nuget.Newtonsoft-Json"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
