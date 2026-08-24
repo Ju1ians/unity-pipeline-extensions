@@ -461,17 +461,54 @@ namespace UnityPipeline.Extensions.Editor
 
         private static Scene FindTemporaryScene(SessionRecord record)
         {
+            if (record == null)
+                return default;
+
+            if (record.temporarySceneHandle != 0)
+            {
+                for (var i = 0; i < SceneManager.sceneCount; i++)
+                {
+                    var scene = SceneManager.GetSceneAt(i);
+                    if (scene.handle == record.temporarySceneHandle)
+                        return scene;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(record.temporaryScenePath))
+            {
+                for (var i = 0; i < SceneManager.sceneCount; i++)
+                {
+                    var scene = SceneManager.GetSceneAt(i);
+                    if (string.Equals(
+                        scene.path,
+                        record.temporaryScenePath,
+                        StringComparison.OrdinalIgnoreCase))
+                        return scene;
+                }
+
+                // Current records always persist an exact path. If it no longer
+                // resolves, do not fall back to a shared filename such as
+                // TemporaryScene and risk closing a pre-existing user scene.
+                return default;
+            }
+
+            // Legacy records may lack both a usable handle and a path. A name is
+            // safe only when it identifies exactly one loaded scene.
+            Scene uniqueNameMatch = default;
+            var nameMatchCount = 0;
             for (var i = 0; i < SceneManager.sceneCount; i++)
             {
                 var scene = SceneManager.GetSceneAt(i);
-                if (scene.handle == record.temporarySceneHandle ||
-                    (!string.IsNullOrEmpty(record.temporaryScenePath) &&
-                     string.Equals(scene.path, record.temporaryScenePath, StringComparison.OrdinalIgnoreCase)) ||
-                    string.Equals(scene.name, record.temporarySceneName, StringComparison.Ordinal))
-                    return scene;
+                if (!string.Equals(scene.name, record.temporarySceneName, StringComparison.Ordinal))
+                    continue;
+
+                uniqueNameMatch = scene;
+                nameMatchCount++;
+                if (nameMatchCount > 1)
+                    return default;
             }
 
-            return default;
+            return nameMatchCount == 1 ? uniqueNameMatch : default;
         }
 
         private static bool RestoreOriginalActiveScene(SessionRecord record)

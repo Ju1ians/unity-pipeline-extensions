@@ -24,7 +24,7 @@ The Pipeline dependency is declared in `package.json` and is resolved by Unity P
 In **Window > Package Management > Package Manager**, select **+ > Install package from git URL** and enter:
 
 ```text
-https://github.com/Ju1ians/unity-pipeline-extensions.git#v0.3.1
+https://github.com/Ju1ians/unity-pipeline-extensions.git#v0.3.2
 ```
 
 The version tag pins a reproducible revision; Unity records the resolved commit in

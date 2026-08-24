@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2 / safe-component-v1 - 2026-08-24
+
+- Resolve the active scratch scene by exact handle or path before cleanup.
+- Restrict legacy name fallback to a unique loaded-scene match so a pre-existing
+  scene with the same filename is never discarded.
+
 ## 0.3.1 / safe-component-v1 - 2026-08-23
 
 - Add the missing Unity `.meta` file for `LICENSE.md` so Git installs remain console-clean during asset refreshes.
