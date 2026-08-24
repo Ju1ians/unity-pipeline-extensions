@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.3 / safe-component-v1 - 2026-08-25
+
+- Store scene handles as raw unsigned data and use the Unity 6000.5
+  `SceneHandle.GetRawData()` API without breaking Unity 6000.3 compilation.
+- Preserve the existing exact-handle cleanup and restoration behavior across
+  both supported Unity Editor API shapes.
+
 ## 0.3.2 / safe-component-v1 - 2026-08-24
 
 - Resolve the active scratch scene by exact handle or path before cleanup.

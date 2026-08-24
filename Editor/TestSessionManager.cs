@@ -23,7 +23,7 @@ namespace UnityPipeline.Extensions.Editor
         {
             public string name;
             public string path;
-            public int handle;
+            public ulong handle;
             public bool isLoaded;
             public bool isDirty;
             public bool isActive;
@@ -51,7 +51,7 @@ namespace UnityPipeline.Extensions.Editor
         [Serializable]
         internal sealed class SceneSnapshot
         {
-            public int handle;
+            public ulong handle;
             public string name;
             public string path;
             public bool wasDirty;
@@ -63,7 +63,7 @@ namespace UnityPipeline.Extensions.Editor
         {
             public string sessionId;
             public string temporarySceneName;
-            public int temporarySceneHandle;
+            public ulong temporarySceneHandle;
             public string temporaryScenePath;
             public string scratchRoot;
             public bool scratchParentExisted;
@@ -168,7 +168,7 @@ namespace UnityPipeline.Extensions.Editor
                 var scene = SceneManager.GetSceneAt(i);
                 record.originalScenes.Add(new SceneSnapshot
                 {
-                    handle = scene.handle,
+                    handle = GetSceneHandleRawData(scene),
                     name = scene.name,
                     path = scene.path,
                     wasDirty = scene.isDirty,
@@ -237,7 +237,7 @@ namespace UnityPipeline.Extensions.Editor
                     throw new InvalidOperationException("Activation completed, but the temporary test scene is not the active scene.");
 
                 record.temporarySceneName = tempScene.name;
-                record.temporarySceneHandle = tempScene.handle;
+                record.temporarySceneHandle = GetSceneHandleRawData(tempScene);
 
                 diagnostics.stage = "complete";
                 diagnostics.error = null;
@@ -409,7 +409,7 @@ namespace UnityPipeline.Extensions.Editor
             {
                 name = scene.name,
                 path = scene.path,
-                handle = scene.handle,
+                handle = GetSceneHandleRawData(scene),
                 isLoaded = scene.isLoaded,
                 isDirty = scene.isLoaded && scene.isDirty,
                 isActive = active.IsValid() && scene.handle == active.handle
@@ -469,7 +469,7 @@ namespace UnityPipeline.Extensions.Editor
                 for (var i = 0; i < SceneManager.sceneCount; i++)
                 {
                     var scene = SceneManager.GetSceneAt(i);
-                    if (scene.handle == record.temporarySceneHandle)
+                    if (GetSceneHandleRawData(scene) == record.temporarySceneHandle)
                         return scene;
                 }
             }
@@ -526,7 +526,7 @@ namespace UnityPipeline.Extensions.Editor
             for (var i = 0; i < SceneManager.sceneCount; i++)
             {
                 var scene = SceneManager.GetSceneAt(i);
-                if (scene.handle == snapshot.handle)
+                if (GetSceneHandleRawData(scene) == snapshot.handle)
                     return scene;
                 if (!string.IsNullOrEmpty(snapshot.path) &&
                     string.Equals(scene.path, snapshot.path, StringComparison.OrdinalIgnoreCase))
@@ -537,6 +537,15 @@ namespace UnityPipeline.Extensions.Editor
             }
 
             return default;
+        }
+
+        private static ulong GetSceneHandleRawData(Scene scene)
+        {
+#if UNITY_6000_5_OR_NEWER
+            return scene.handle.GetRawData();
+#else
+            return unchecked((ulong)(int)scene.handle);
+#endif
         }
 
         private static void VerifyOriginalSceneDirtyState(SessionRecord record, CleanupReport report)
