@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Unity.Pipeline.Editor.Commands.Scenes;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -189,7 +188,9 @@ namespace UnityPipeline.Extensions.Editor
                     throw new InvalidOperationException($"Scratch directory '{record.scratchRoot}' was not created.");
 
                 diagnostics.stage = "create_scene";
-                SceneCommands.CreateScene(record.temporaryScenePath, additive: true, template: "empty");
+                tempScene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+                if (!EditorSceneManager.SaveScene(tempScene, record.temporaryScenePath, false))
+                    throw new InvalidOperationException($"Temporary scene could not be saved at '{record.temporaryScenePath}'.");
                 diagnostics.sceneCreateSucceeded = true;
                 AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
                 diagnostics.sceneAssetExists = AssetDatabase.LoadAssetAtPath<SceneAsset>(record.temporaryScenePath) != null;
@@ -217,7 +218,7 @@ namespace UnityPipeline.Extensions.Editor
                 diagnostics.setActiveSceneAttempted = true;
 
                 // If creation already made the expected scene active, treat that as success rather than
-                // performing a redundant activation call. Otherwise use Pipeline's public implementation.
+                // performing a redundant activation call. Otherwise use Unity's public SceneManager API.
                 var activeNow = SceneManager.GetActiveScene();
                 if (activeNow.IsValid() && activeNow.handle == tempScene.handle)
                 {
@@ -225,8 +226,7 @@ namespace UnityPipeline.Extensions.Editor
                 }
                 else
                 {
-                    SceneCommands.SetActiveScene(record.temporaryScenePath);
-                    diagnostics.setActiveSceneSucceeded = true;
+                    diagnostics.setActiveSceneSucceeded = SceneManager.SetActiveScene(tempScene);
                 }
 
                 diagnostics.activeSceneAfterActivation = CaptureScene(SceneManager.GetActiveScene());

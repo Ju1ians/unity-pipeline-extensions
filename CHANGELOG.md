@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 / pipeline-0.6-public-api-v1 - 2026-09-03
+
+- Update the package dependency to official Unity Pipeline `0.6.0-exp.1`.
+- Remove dependencies on Pipeline command registries, handlers, and DTOs that
+  became internal in Pipeline 0.6.
+- Keep the extension independent by using public Unity scene, Undo, and
+  serialization APIs for isolated self-test setup and verification.
+- Preserve the public Pipeline command, ObjectRef, and authoring contracts used
+  by `safe_add_component` and extension discovery.
+
 ## 0.3.3 / safe-component-v1 - 2026-08-25
 
 - Store scene handles as raw unsigned data and use the Unity 6000.5

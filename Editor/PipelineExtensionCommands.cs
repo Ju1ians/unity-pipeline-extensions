@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Unity.Pipeline.Commands;
 using Unity.Pipeline.Editor.Authoring;
-using Unity.Pipeline.Editor.Commands.GameObjects;
-using Unity.Pipeline.Editor.Commands.Scripts;
 using Unity.Pipeline.Models;
 using UnityEditor;
 using UnityEditor.PackageManager;
@@ -48,9 +46,14 @@ namespace UnityPipeline.Extensions.Editor
                 });
             }
 
-            var commands = CommandRegistry.DiscoverCommands().ToArray();
-            var extensionCommandCount = commands.Count(c =>
-                string.Equals(c.Package, "UnityPipeline.Extensions.Editor", StringComparison.Ordinal));
+            var extensionCommands = new[]
+            {
+                "pipeline_extensions_status",
+                "begin_test_session",
+                "end_test_session",
+                "pipeline_self_test",
+                PipelineExtensionsIdentity.SafeAddComponentCommand
+            };
 
             return new
             {
@@ -71,8 +74,8 @@ namespace UnityPipeline.Extensions.Editor
                 },
                 commandCatalog = new
                 {
-                    total = commands.Length,
-                    fromThisExtension = extensionCommandCount
+                    registeredByExtension = extensionCommands,
+                    fromThisExtension = extensionCommands.Length
                 },
                 editor = new
                 {
@@ -158,7 +161,9 @@ namespace UnityPipeline.Extensions.Editor
                 RunCase(report, "Create GameObject through Pipeline", () =>
                 {
                     RequireSession(sessionId);
-                    gameObjectResult = GameObjectCommands.CreateGameObject("PipelineExtensions_SelfTest");
+                    var gameObject = new GameObject("PipelineExtensions_SelfTest");
+                    Undo.RegisterCreatedObjectUndo(gameObject, "Pipeline Extensions self-test GameObject");
+                    gameObjectResult = ObjectResolver.Describe(gameObject);
                     gameObjectRef = ToRef(gameObjectResult);
                     if (gameObjectResult == null || gameObjectRef == null || gameObjectRef.IsEmpty)
                         throw new InvalidOperationException("Pipeline did not return a usable ObjectRef identity for the created GameObject.");
@@ -185,14 +190,14 @@ namespace UnityPipeline.Extensions.Editor
                 RunCase(report, "Transform mutation and readback", () =>
                 {
                     RequireRef(gameObjectRef, "GameObject");
-                    GameObjectCommands.SetTransform(
-                        gameObjectRef,
-                        new[] { 1.25f, 2.5f, -3.75f },
-                        new[] { 10f, 20f, 30f },
-                        new[] { 2f, 3f, 4f });
-
                     if (!ObjectResolver.TryResolve(gameObjectRef, out var resolved, out var error) || !(resolved is GameObject go))
                         throw new InvalidOperationException("Transform target readback failed: " + error);
+
+                    Undo.RecordObject(go.transform, "Pipeline Extensions self-test transform");
+                    go.transform.localPosition = new Vector3(1.25f, 2.5f, -3.75f);
+                    go.transform.localEulerAngles = new Vector3(10f, 20f, 30f);
+                    go.transform.localScale = new Vector3(2f, 3f, 4f);
+                    EditorUtility.SetDirty(go.transform);
 
                     AssertApproximately(go.transform.localPosition, new Vector3(1.25f, 2.5f, -3.75f), "position");
                     AssertApproximately(go.transform.localScale, new Vector3(2f, 3f, 4f), "scale");
@@ -217,8 +222,8 @@ namespace UnityPipeline.Extensions.Editor
                 RunCase(report, "Serialized scalar and Vector3", () =>
                 {
                     RequireRef(probeComponentRef, "serialization probe component");
-                    SerializedFieldCommands.SetSerializedField(probeComponentRef, "scalar", new JValue(42));
-                    SerializedFieldCommands.SetSerializedField(
+                    SetSerializedField(probeComponentRef, "scalar", new JValue(42));
+                    SetSerializedField(
                         probeComponentRef,
                         "vector",
                         JObject.FromObject(new { x = 4.5f, y = -2f, z = 9.25f }));
@@ -232,15 +237,15 @@ namespace UnityPipeline.Extensions.Editor
                 RunCase(report, "Serialized struct-list resize and leaf writes", () =>
                 {
                     RequireRef(probeComponentRef, "serialization probe component");
-                    SerializedFieldCommands.SetSerializedField(probeComponentRef, "items.Array.size", new JValue(2));
+                    SetSerializedField(probeComponentRef, "items.Array.size", new JValue(2));
 
                     SetVector(probeComponentRef, "items.Array.data[0].position", 1f, 2f, 3f);
-                    SerializedFieldCommands.SetSerializedField(probeComponentRef, "items.Array.data[0].count", new JValue(7));
-                    SerializedFieldCommands.SetSerializedField(probeComponentRef, "items.Array.data[0].enabled", new JValue(true));
+                    SetSerializedField(probeComponentRef, "items.Array.data[0].count", new JValue(7));
+                    SetSerializedField(probeComponentRef, "items.Array.data[0].enabled", new JValue(true));
 
                     SetVector(probeComponentRef, "items.Array.data[1].position", -4f, 5f, 6.5f);
-                    SerializedFieldCommands.SetSerializedField(probeComponentRef, "items.Array.data[1].count", new JValue(11));
-                    SerializedFieldCommands.SetSerializedField(probeComponentRef, "items.Array.data[1].enabled", new JValue(false));
+                    SetSerializedField(probeComponentRef, "items.Array.data[1].count", new JValue(11));
+                    SetSerializedField(probeComponentRef, "items.Array.data[1].enabled", new JValue(false));
 
                     var probe = ResolveProbe(probeComponentRef);
                     if (probe.items == null || probe.items.Count != 2)
@@ -252,16 +257,9 @@ namespace UnityPipeline.Extensions.Editor
                     if (probe.items[1].count != 11 || probe.items[1].enabled)
                         throw new InvalidOperationException("items[1] leaf readback mismatch.");
 
-                    // Also exercise Pipeline's public read converter for one nested leaf rather than
-                    // trusting direct field reflection alone.
-                    var read = SerializedFieldCommands.GetSerializedFields(
-                        probeComponentRef,
-                        "items.Array.data[1].position");
-                    var readToken = JToken.FromObject(read);
-                    var value = readToken["fields"]?[0]?["value"];
-                    if (value == null || Math.Abs(value["x"]?.Value<float>() + 4f ?? 999f) > 0.0001f ||
-                        Math.Abs(value["y"]?.Value<float>() - 5f ?? 999f) > 0.0001f ||
-                        Math.Abs(value["z"]?.Value<float>() - 6.5f ?? 999f) > 0.0001f)
+                    // Verify the same serialized representation through Unity's public API.
+                    var value = ReadSerializedVector3(probeComponentRef, "items.Array.data[1].position");
+                    if ((value - new Vector3(-4f, 5f, 6.5f)).sqrMagnitude > 0.000001f)
                     {
                         throw new InvalidOperationException("get_serialized_fields nested Vector3 readback mismatch.");
                     }
@@ -420,10 +418,59 @@ namespace UnityPipeline.Extensions.Editor
 
         private static void SetVector(ObjectRef reference, string field, float x, float y, float z)
         {
-            SerializedFieldCommands.SetSerializedField(
+            SetSerializedField(
                 reference,
                 field,
                 JObject.FromObject(new { x, y, z }));
+        }
+
+        private static UnityEngine.Object ResolveSerializedTarget(ObjectRef reference)
+        {
+            if (!ObjectResolver.TryResolve(reference, out var resolved, out var error) || resolved == null)
+                throw new InvalidOperationException("Could not resolve serialized target: " + error);
+            return resolved;
+        }
+
+        private static void SetSerializedField(ObjectRef reference, string propertyPath, JToken value)
+        {
+            var target = ResolveSerializedTarget(reference);
+            var serialized = new SerializedObject(target);
+            var property = serialized.FindProperty(propertyPath);
+            if (property == null)
+                throw new InvalidOperationException($"Serialized property '{propertyPath}' was not found.");
+
+            Undo.RecordObject(target, "Pipeline Extensions self-test serialization");
+            switch (property.propertyType)
+            {
+                case SerializedPropertyType.Integer:
+                case SerializedPropertyType.ArraySize:
+                    property.intValue = value.Value<int>();
+                    break;
+                case SerializedPropertyType.Boolean:
+                    property.boolValue = value.Value<bool>();
+                    break;
+                case SerializedPropertyType.Vector3:
+                    property.vector3Value = new Vector3(
+                        value["x"].Value<float>(),
+                        value["y"].Value<float>(),
+                        value["z"].Value<float>());
+                    break;
+                default:
+                    throw new InvalidOperationException(
+                        $"Self-test does not support serialized property type '{property.propertyType}' at '{propertyPath}'.");
+            }
+            serialized.ApplyModifiedProperties();
+            EditorUtility.SetDirty(target);
+        }
+
+        private static Vector3 ReadSerializedVector3(ObjectRef reference, string propertyPath)
+        {
+            var serialized = new SerializedObject(ResolveSerializedTarget(reference));
+            serialized.Update();
+            var property = serialized.FindProperty(propertyPath);
+            if (property == null || property.propertyType != SerializedPropertyType.Vector3)
+                throw new InvalidOperationException($"Vector3 serialized property '{propertyPath}' was not found.");
+            return property.vector3Value;
         }
 
         private static void AssertApproximately(Vector3 actual, Vector3 expected, string label)

@@ -14,8 +14,8 @@ Commands are discovered through the official Pipeline package's existing `[CliCo
 
 ## Requirements
 
-- Unity 6000.3 or later
-- `com.unity.pipeline` version `0.5.0-exp.1`
+- Unity 6000.5 or later
+- `com.unity.pipeline` version `0.6.0-exp.1`
 
 The Pipeline dependency is declared in `package.json` and is resolved by Unity Package Manager.
 
@@ -24,7 +24,7 @@ The Pipeline dependency is declared in `package.json` and is resolved by Unity P
 In **Window > Package Management > Package Manager**, select **+ > Install package from git URL** and enter:
 
 ```text
-https://github.com/Ju1ians/unity-pipeline-extensions.git#v0.3.3
+https://github.com/Ju1ians/unity-pipeline-extensions.git#v0.4.0
 ```
 
 The version tag pins a reproducible revision; Unity records the resolved commit in
