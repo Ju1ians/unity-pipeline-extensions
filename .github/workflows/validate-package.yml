@@ -19,7 +19,7 @@ jobs:
           if ($package.name -ne 'com.julianketter.unity-pipeline-extensions') {
             throw 'Unexpected package name.'
           }
-          if ($package.dependencies.'com.unity.pipeline' -ne '0.5.0-exp.1') {
+          if ($package.dependencies.'com.unity.pipeline' -ne '0.6.0-exp.1') {
             throw 'Official Unity Pipeline dependency changed without compatibility review.'
           }
           $trackedSource = Get-ChildItem Editor,Runtime,Tests -Recurse -File |
