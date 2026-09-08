@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0 / pipeline-0.6-auditor-v1
+
+- Consolidate Project Auditor into this single UPM package, preserving the original repository history.
+- Retain a separate optional Auditor assembly, public-API adapter, and unchanged structured commands/schema.
+- Advertise the audit schema and commands in extension identity diagnostics.
+- Do not require Auditor/rules or Gateway for other extension functionality.
+- Remove the old standalone Auditor dependency when upgrading; never install both packages together.
+
 ## 0.4.0 / pipeline-0.6-public-api-v1 - 2026-09-03
 
 - Update the package dependency to official Unity Pipeline `0.6.0-exp.1`.

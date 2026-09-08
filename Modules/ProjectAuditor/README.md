@@ -1,17 +1,19 @@
-# Unity Pipeline Project Auditor Extension
+# Project Auditor module
 
-Standalone structured Project Auditor integration for **official Unity Pipeline**.
-No Gateway, Bridge, existing Pipeline Extensions, CSV parser, or external service is required.
+Structured Project Auditor integration within **Unity Pipeline Extensions**.
+No Gateway, Bridge, CSV parser, or external service is required.
 
 ## Install
 
 In Unity Package Manager, choose **Install package from Git URL**:
 
 ```text
-https://github.com/Ju1ians/unity-pipeline-project-auditor.git#v0.1.0
+https://github.com/Ju1ians/unity-pipeline-extensions.git#v0.5.0
 ```
 
-Requires Pipeline 0.6.0-exp.1 and a compatible Project Auditor public API.
+Remove the old standalone Auditor package in the same manifest update before
+resolving this version; see the root README for migration instructions.
+Analysis requires Pipeline 0.6.0-exp.1 and a compatible Project Auditor public API.
 On Editors with built-in Project Auditor, install `com.unity.project-auditor-rules`
 as well. Missing Auditor/rules is reported as unavailable, never zero findings.
 The optional API adapter allows this package to compile without Auditor installed.
@@ -74,7 +76,7 @@ inside batch. Legacy Pipeline `audit`/CSV behavior is left untouched.
 
 ## Tests
 
-Add this package to `testables` in a disposable Unity project's manifest and run
+Add `com.julianketter.unity-pipeline-extensions` to `testables` in a disposable Unity project's manifest and run
 `UnityPipeline.ProjectAuditor.Tests` in EditMode. Tests cover lifetime, bounds,
 immutable pagination, mapping, and a real ProjectSetting scan. The live test
 requires Auditor/rules. Do not use a user's working project as the test fixture.

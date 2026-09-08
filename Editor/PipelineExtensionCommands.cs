@@ -52,7 +52,8 @@ namespace UnityPipeline.Extensions.Editor
                 "begin_test_session",
                 "end_test_session",
                 "pipeline_self_test",
-                PipelineExtensionsIdentity.SafeAddComponentCommand
+                PipelineExtensionsIdentity.SafeAddComponentCommand,
+                "project_audit_start", "project_audit_status", "project_audit_results", "project_audit_dispose"
             };
 
             return new
@@ -70,7 +71,8 @@ namespace UnityPipeline.Extensions.Editor
                 },
                 capabilities = new
                 {
-                    safeAddComponentCommand = PipelineExtensionsIdentity.SafeAddComponentCommand
+                    safeAddComponentCommand = PipelineExtensionsIdentity.SafeAddComponentCommand,
+                    projectAuditSchema = PipelineExtensionsIdentity.ProjectAuditSchema
                 },
                 commandCatalog = new
                 {

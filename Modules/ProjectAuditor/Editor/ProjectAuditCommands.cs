@@ -84,7 +84,7 @@ namespace UnityPipeline.ProjectAuditor.Editor
                 evidence["unity_version"] = UnityEngine.Application.unityVersion;
                 evidence["editor_build_target"] = EditorUserBuildSettings.activeBuildTarget.ToString();
                 evidence["project_path"] = System.IO.Path.GetDirectoryName(UnityEngine.Application.dataPath);
-                evidence["extension_version"] = "0.1.0";
+                evidence["extension_version"] = UnityPipeline.Extensions.PipelineExtensionsIdentity.PackageVersion;
                 evidence["rules_package_version"] = installed.FirstOrDefault(p => p.name == "com.unity.project-auditor-rules")?.version;
                 lock (Store.Gate) scan.Evidence = evidence;
                 invoke();

@@ -25,6 +25,11 @@ namespace UnityPipeline.Extensions.Tests.Editor
             Assert.AreEqual(
                 PipelineExtensionsIdentity.SafeAddComponentCommand,
                 status["capabilities"]?["safeAddComponentCommand"]?.ToString());
+            Assert.AreEqual(PipelineExtensionsIdentity.ProjectAuditSchema,
+                status["capabilities"]?["projectAuditSchema"]?.ToString());
+            foreach (var command in new[] { "project_audit_start", "project_audit_status", "project_audit_results", "project_audit_dispose" })
+                Assert.IsTrue(status["commandCatalog"]?["registeredByExtension"]?.ToObject<string[]>() is string[] names &&
+                    System.Array.IndexOf(names, command) >= 0);
         }
     }
 }

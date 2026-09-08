@@ -94,9 +94,23 @@ namespace UnityPipeline.ProjectAuditor.Tests
         }
         [Test] public void InvalidCategoryIsRejectedBeforeScan()
         {
-            var adapter = new ProjectAuditorAdapter();
+            ProjectAuditorAdapter adapter;
+            try { adapter = new ProjectAuditorAdapter(); }
+            catch (NotSupportedException) { Assert.Ignore("Optional Project Auditor API is not available in this Editor"); return; }
             Assert.Throws<ArgumentException>(() => adapter.ValidateCategories("this_is_not_a_category"));
             Assert.IsEmpty(adapter.ValidateCategories(""));
+        }
+        [Test] public void AbsentAuditorReturnsStructuredUnavailable()
+        {
+            try { new ProjectAuditorAdapter(); }
+            catch (NotSupportedException)
+            {
+                var result = (JObject)ProjectAuditCommands.Start();
+                Assert.AreEqual("unavailable", (string)result["status"]);
+                Assert.AreEqual("AUDITOR_UNAVAILABLE", (string)result["error_code"]);
+                return;
+            }
+            Assert.Ignore("This Editor has Project Auditor; run the no-Auditor Editor matrix case too.");
         }
 
         // Run only in a disposable test project with Auditor and its rules installed.
@@ -112,6 +126,8 @@ namespace UnityPipeline.ProjectAuditor.Tests
         }
         static IEnumerator CheckLiveScan(string categories)
         {
+            try { new ProjectAuditorAdapter(); }
+            catch (NotSupportedException) { Assert.Ignore("Optional Project Auditor is unavailable"); }
             var start = (JObject)ProjectAuditCommands.Start(categories);
             Assert.IsNotNull(start["scan_id"], start.ToString());
             var id = (string)start["scan_id"]; var deadline = DateTime.UtcNow.AddMinutes(3);
