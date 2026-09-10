@@ -23,11 +23,11 @@ namespace UnityPipeline.Extensions.Tests.Editor
             Assert.Throws<ArgumentException>(() => ObserverCaptureCommands.Validate(Views, 2048, 64));
             Assert.AreEqual(2, ObserverCaptureCommands.Validate(Views, 64, 64).Count);
         }
-        [Test] public void EditModeObservationCannotStartPlay()
+        [Test] public void UnsavedRunnerSceneIsNotSavedToEnterPlay()
         {
             Assert.IsFalse(EditorApplication.isPlaying);
             var r = JObject.FromObject(ObserverCaptureCommands.Capture(Views));
-            Assert.AreEqual("OBSERVER_RUNTIME_REQUIRED", (string)r["error_code"]);
+            Assert.AreEqual("OBSERVER_START_FAILED", (string)r["error_code"]);
             Assert.IsFalse(EditorApplication.isPlaying);
             Assert.AreEqual(0, Observers());
         }

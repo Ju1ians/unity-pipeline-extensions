@@ -1,8 +1,10 @@
 # Unity Pipeline Extensions
 
-Development feature: `capture_observer` captures 1-4 temporary perspective views of
-an already-running Play session as a single PNG contact sheet. It never starts or
-stops Play, saves files, or modifies real cameras. `views_json` accepts world-space
+Preview feature: `capture_observer` automatically enters Play, captures 1-4
+temporary viewpoints as one PNG contact sheet, stops Play, and verifies restoration.
+Already-running Play sessions are preserved. It never saves files or modifies real
+cameras. Poll `capture_observer_result` using the returned job ID across domain
+reloads. Unsaved scenes are not automatically saved. `views_json` accepts world-space
 position + rotation/look_at, or target + distance/yaw/pitch; `width` and `height`
 are per-view dimensions (64-1024). Uses disabled disposable cameras, not cloned
 scripts. Built-in and URP 17.6 rendering are tested on Unity 6000.6.0f1;

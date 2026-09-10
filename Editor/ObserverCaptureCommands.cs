@@ -24,18 +24,23 @@ namespace UnityPipeline.Extensions.Editor
             };
         }
 
-        [CliCommand("capture_observer", "Observe an existing Play session using disposable cameras. No Play controls, saving, or real-camera changes. 1-4 views render synchronously into a PNG contact sheet (same simulation frame). Requires GPU; SRP must support StandardRequest. Excludes overlay UI, camera scripts and camera stacks. Rendering may invoke project render callbacks; this is not a sandbox.", Tags = new[] { "capture", "extensions" })]
+        [CliCommand("capture_observer", "Automatically enter Play, capture 1-4 disposable viewpoints, stop Play and verify restoration. Returns observer_job during transitions; poll capture_observer_result. Already-running Play sessions are preserved. No saves or real-camera changes. Requires GPU and supported SRP StandardRequest where applicable.", Tags = new[] { "capture", "extensions" })]
         public static object Capture(
             [CliArg("views_json", "JSON array of 1-4 objects: position:[x,y,z] plus rotation:[x,y,z] OR look_at:[x,y,z]; alternatively target:[x,y,z], distance, yaw, pitch. Optional fov (10-150). World coordinates; orbit angles in degrees. No scene-object lookup.")] string viewsJson,
             [CliArg("width", "Each tile width, 64-1024 pixels.")] int width = 640,
             [CliArg("height", "Each tile height, 64-1024 pixels.")] int height = 360,
             [CliArg("review_task_id", "Optional Gateway task for workspace/submission evidence. Not interpreted by Unity.")] string reviewTaskId = "")
         {
-            if (!EditorApplication.isPlaying || !Application.isPlaying || EditorApplication.isCompiling || EditorApplication.isUpdating)
-                return Error("OBSERVER_RUNTIME_REQUIRED", "An authorized user/Builder/Reviewer must establish a stable Play session. Observation never starts or stops Play Mode.");
-            if (busy) return Error("OBSERVER_BUSY", "Another observer capture is active.");
+            if (busy || ObserverPlaySession.Active) return Error("OBSERVER_BUSY", "Another observer capture is active.");
             if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
                 return Error("OBSERVER_GPU_UNAVAILABLE", "A graphics device is required.");
+            if (!EditorApplication.isPlaying)
+            {
+                try { return ObserverPlaySession.Begin(viewsJson, width, height); }
+                catch (Exception e) { return Error("OBSERVER_START_FAILED", e.Message); }
+            }
+            if (!Application.isPlaying || EditorApplication.isCompiling || EditorApplication.isUpdating)
+                return Error("OBSERVER_NOT_READY", "Wait for the Editor to finish transitioning.");
             busy = true;
             if (runtimeSession == null) runtimeSession = Guid.NewGuid().ToString("N");
             try { return CaptureCore(viewsJson, width, height); }
@@ -100,13 +105,14 @@ namespace UnityPipeline.Extensions.Editor
             }
         }
         static JArray XYZ(Vector3 v) => new JArray(v.x, v.y, v.z);
-        static JArray Scenes()
+        internal static JArray Scenes(bool includeHandles = true)
         {
             var result = new JArray();
             for (var i = 0; i < SceneManager.sceneCount; i++)
             {
                 var s = SceneManager.GetSceneAt(i);
                 result.Add(new JObject { ["handle"] = TestSessionManager.GetSceneHandleRawData(s).ToString(), ["path"] = s.path, ["name"] = s.name, ["dirty"] = s.isDirty, ["loaded"] = s.isLoaded, ["active"] = s == SceneManager.GetActiveScene() });
+                if (!includeHandles) ((JObject)result.Last).Remove("handle");
             }
             return result;
         }
