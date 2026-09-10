@@ -1,9 +1,11 @@
 # Changelog
 
-## Unreleased — Disposable runtime observer
+## 0.6.0 — Disposable runtime observer
 
 - Adds bounded same-frame multi-view PNG capture from new temporary cameras in existing Play Mode.
-- Supports explicit poses and coordinate-target orbit; never saves or changes real camera/Play/Pause state.
+- Supports explicit poses and coordinate-target orbit without saving or changing real cameras.
+- Automatically enters Play from clean saved Edit Mode scenes, captures, exits and verifies restoration; preserves already-running Play/Pause state.
+- Retains the bounded job across domain reloads and exits its Play session on capture failure.
 - Uses built-in rendering or supported SRP StandardRequest, with resource cleanup and scene/frame state checks.
 - Reuses test-session scene identity normalization and reports explicit runtime/session and viewpoint metadata.
 

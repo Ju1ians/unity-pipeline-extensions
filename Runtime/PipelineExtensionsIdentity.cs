@@ -4,10 +4,10 @@ namespace UnityPipeline.Extensions
     public static class PipelineExtensionsIdentity
     {
         public const string PackageName = "com.julianketter.unity-pipeline-extensions";
-        public const string PackageVersion = "0.6.0-preview.2";
+        public const string PackageVersion = "0.6.0";
         public const string CompatibilityRevision = "observer-auto-play-v1";
         public const string BuildIdentity =
-            "com.julianketter.unity-pipeline-extensions/0.6.0-preview.2/observer-auto-play-v1";
+            "com.julianketter.unity-pipeline-extensions/0.6.0/observer-auto-play-v1";
         public const string SafeAddComponentCommand = "safe_add_component";
         public const string ProjectAuditSchema = "unity-pipeline-project-audit/v1";
     }
