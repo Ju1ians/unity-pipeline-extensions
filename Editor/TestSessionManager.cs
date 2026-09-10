@@ -539,7 +539,7 @@ namespace UnityPipeline.Extensions.Editor
             return default;
         }
 
-        private static ulong GetSceneHandleRawData(Scene scene)
+        internal static ulong GetSceneHandleRawData(Scene scene)
         {
 #if UNITY_6000_5_OR_NEWER
             return scene.handle.GetRawData();

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — Disposable runtime observer
+
+- Adds bounded same-frame multi-view PNG capture from new temporary cameras in existing Play Mode.
+- Supports explicit poses and coordinate-target orbit; never saves or changes real camera/Play/Pause state.
+- Uses built-in rendering or supported SRP StandardRequest, with resource cleanup and scene/frame state checks.
+- Reuses test-session scene identity normalization and reports explicit runtime/session and viewpoint metadata.
+
 ## 0.5.0 / pipeline-0.6-auditor-v1
 
 - Consolidate Project Auditor into this single UPM package, preserving the original repository history.

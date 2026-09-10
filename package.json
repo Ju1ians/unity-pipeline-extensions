@@ -1,7 +1,7 @@
 {
   "name": "com.julianketter.unity-pipeline-extensions",
   "displayName": "Unity Pipeline Extensions",
-  "version": "0.5.0",
+  "version": "0.6.0-preview.1",
   "unity": "6000.0",
   "description": "Standalone extensions for official Unity Pipeline: analyzer-safe authoring, diagnostics, deterministic validation, and optional structured Project Auditor analysis.",
   "author": {
@@ -25,8 +25,8 @@
     "com.unity.nuget.newtonsoft-json": "3.0.2"
   },
   "_unityPipelineExtensions": {
-    "buildIdentity": "com.julianketter.unity-pipeline-extensions/0.5.0/pipeline-0.6-auditor-v1",
-    "compatibilityRevision": "pipeline-0.6-auditor-v1",
+    "buildIdentity": "com.julianketter.unity-pipeline-extensions/0.6.0-preview.1/observer-v1",
+    "compatibilityRevision": "observer-v1",
     "safeAddComponentCommand": "safe_add_component"
   }
 }
